@@ -1,0 +1,450 @@
+[
+  {
+    "id": "barbell-bench-press",
+    "name": "Barbell Bench Press",
+    "primaryMuscles": ["chest", "triceps"],
+    "secondaryMuscles": ["shoulders", "core"],
+    "equipment": "barbells",
+    "category": "push"
+  },
+  {
+    "id": "incline-bench-press",
+    "name": "Incline Bench Press",
+    "primaryMuscles": ["chest", "shoulders"],
+    "secondaryMuscles": ["triceps"],
+    "equipment": "barbells",
+    "category": "push"
+  },
+  {
+    "id": "dumbbell-bench-press",
+    "name": "Dumbbell Bench Press",
+    "primaryMuscles": ["chest", "triceps"],
+    "secondaryMuscles": ["shoulders"],
+    "equipment": "dumbbells",
+    "category": "push"
+  },
+  {
+    "id": "machine-chest-press",
+    "name": "Machine Chest Press",
+    "primaryMuscles": ["chest"],
+    "secondaryMuscles": ["triceps", "shoulders"],
+    "equipment": "machines",
+    "category": "push"
+  },
+  {
+    "id": "cable-chest-fly",
+    "name": "Cable Chest Fly",
+    "primaryMuscles": ["chest"],
+    "secondaryMuscles": ["shoulders"],
+    "equipment": "cables",
+    "category": "push"
+  },
+  {
+    "id": "dumbbell-chest-fly",
+    "name": "Dumbbell Chest Fly",
+    "primaryMuscles": ["chest"],
+    "secondaryMuscles": ["shoulders"],
+    "equipment": "dumbbells",
+    "category": "push"
+  },
+  {
+    "id": "overhead-press",
+    "name": "Overhead Press",
+    "primaryMuscles": ["shoulders", "triceps"],
+    "secondaryMuscles": ["chest", "core"],
+    "equipment": "barbells",
+    "category": "push"
+  },
+  {
+    "id": "dumbbell-shoulder-press",
+    "name": "Dumbbell Shoulder Press",
+    "primaryMuscles": ["shoulders", "triceps"],
+    "secondaryMuscles": ["chest"],
+    "equipment": "dumbbells",
+    "category": "push"
+  },
+  {
+    "id": "machine-shoulder-press",
+    "name": "Machine Shoulder Press",
+    "primaryMuscles": ["shoulders"],
+    "secondaryMuscles": ["triceps"],
+    "equipment": "machines",
+    "category": "push"
+  },
+  {
+    "id": "lateral-raise",
+    "name": "Lateral Raise",
+    "primaryMuscles": ["shoulders"],
+    "secondaryMuscles": [],
+    "equipment": "dumbbells",
+    "category": "push"
+  },
+  {
+    "id": "cable-lateral-raise",
+    "name": "Cable Lateral Raise",
+    "primaryMuscles": ["shoulders"],
+    "secondaryMuscles": [],
+    "equipment": "cables",
+    "category": "push"
+  },
+  {
+    "id": "dumbbell-tricep-extension",
+    "name": "Dumbbell Tricep Extension",
+    "primaryMuscles": ["triceps"],
+    "secondaryMuscles": [],
+    "equipment": "dumbbells",
+    "category": "push"
+  },
+  {
+    "id": "tricep-rope-pushdown",
+    "name": "Tricep Rope Pushdown",
+    "primaryMuscles": ["triceps"],
+    "secondaryMuscles": [],
+    "equipment": "cables",
+    "category": "push"
+  },
+  {
+    "id": "barbell-squat",
+    "name": "Barbell Squat",
+    "primaryMuscles": ["quads", "glutes"],
+    "secondaryMuscles": ["hamstrings", "core"],
+    "equipment": "barbells",
+    "category": "legs"
+  },
+  {
+    "id": "dumbbell-squat",
+    "name": "Dumbbell Squat",
+    "primaryMuscles": ["quads", "glutes"],
+    "secondaryMuscles": ["hamstrings"],
+    "equipment": "dumbbells",
+    "category": "legs"
+  },
+  {
+    "id": "leg-press",
+    "name": "Leg Press",
+    "primaryMuscles": ["quads", "glutes"],
+    "secondaryMuscles": ["hamstrings"],
+    "equipment": "machines",
+    "category": "legs"
+  },
+  {
+    "id": "leg-extension",
+    "name": "Leg Extension",
+    "primaryMuscles": ["quads"],
+    "secondaryMuscles": [],
+    "equipment": "machines",
+    "category": "legs"
+  },
+  {
+    "id": "barbell-deadlift",
+    "name": "Barbell Deadlift",
+    "primaryMuscles": ["back", "glutes"],
+    "secondaryMuscles": ["hamstrings", "core"],
+    "equipment": "barbells",
+    "category": "pull"
+  },
+  {
+    "id": "dumbbell-deadlift",
+    "name": "Dumbbell Deadlift",
+    "primaryMuscles": ["back", "glutes"],
+    "secondaryMuscles": ["hamstrings"],
+    "equipment": "dumbbells",
+    "category": "pull"
+  },
+  {
+    "id": "barbell-row",
+    "name": "Barbell Row",
+    "primaryMuscles": ["back", "biceps"],
+    "secondaryMuscles": ["shoulders"],
+    "equipment": "barbells",
+    "category": "pull"
+  },
+  {
+    "id": "dumbbell-row",
+    "name": "Dumbbell Row",
+    "primaryMuscles": ["back", "biceps"],
+    "secondaryMuscles": ["shoulders"],
+    "equipment": "dumbbells",
+    "category": "pull"
+  },
+  {
+    "id": "cable-row",
+    "name": "Cable Row",
+    "primaryMuscles": ["back", "biceps"],
+    "secondaryMuscles": ["shoulders"],
+    "equipment": "cables",
+    "category": "pull"
+  },
+  {
+    "id": "lat-pulldown",
+    "name": "Lat Pulldown",
+    "primaryMuscles": ["back", "biceps"],
+    "secondaryMuscles": ["shoulders"],
+    "equipment": "machines",
+    "category": "pull"
+  },
+  {
+    "id": "pull-ups",
+    "name": "Pull-ups",
+    "primaryMuscles": ["back", "biceps"],
+    "secondaryMuscles": ["shoulders"],
+    "equipment": "bodyweight",
+    "category": "pull"
+  },
+  {
+    "id": "assisted-pull-ups",
+    "name": "Assisted Pull-ups",
+    "primaryMuscles": ["back", "biceps"],
+    "secondaryMuscles": ["shoulders"],
+    "equipment": "machines",
+    "category": "pull"
+  },
+  {
+    "id": "chin-ups",
+    "name": "Chin-ups",
+    "primaryMuscles": ["biceps", "back"],
+    "secondaryMuscles": ["shoulders"],
+    "equipment": "bodyweight",
+    "category": "pull"
+  },
+  {
+    "id": "barbell-curl",
+    "name": "Barbell Curl",
+    "primaryMuscles": ["biceps"],
+    "secondaryMuscles": [],
+    "equipment": "barbells",
+    "category": "pull"
+  },
+  {
+    "id": "dumbbell-curl",
+    "name": "Dumbbell Curl",
+    "primaryMuscles": ["biceps"],
+    "secondaryMuscles": [],
+    "equipment": "dumbbells",
+    "category": "pull"
+  },
+  {
+    "id": "cable-curl",
+    "name": "Cable Curl",
+    "primaryMuscles": ["biceps"],
+    "secondaryMuscles": [],
+    "equipment": "cables",
+    "category": "pull"
+  },
+  {
+    "id": "machine-curl",
+    "name": "Machine Curl",
+    "primaryMuscles": ["biceps"],
+    "secondaryMuscles": [],
+    "equipment": "machines",
+    "category": "pull"
+  },
+  {
+    "id": "hamstring-curl",
+    "name": "Hamstring Curl",
+    "primaryMuscles": ["hamstrings"],
+    "secondaryMuscles": [],
+    "equipment": "machines",
+    "category": "legs"
+  },
+  {
+    "id": "lying-hamstring-curl",
+    "name": "Lying Hamstring Curl",
+    "primaryMuscles": ["hamstrings"],
+    "secondaryMuscles": [],
+    "equipment": "machines",
+    "category": "legs"
+  },
+  {
+    "id": "dumbbell-lunge",
+    "name": "Dumbbell Lunge",
+    "primaryMuscles": ["quads", "glutes"],
+    "secondaryMuscles": ["hamstrings"],
+    "equipment": "dumbbells",
+    "category": "legs"
+  },
+  {
+    "id": "barbell-lunge",
+    "name": "Barbell Lunge",
+    "primaryMuscles": ["quads", "glutes"],
+    "secondaryMuscles": ["hamstrings"],
+    "equipment": "barbells",
+    "category": "legs"
+  },
+  {
+    "id": "leg-curl",
+    "name": "Leg Curl",
+    "primaryMuscles": ["hamstrings"],
+    "secondaryMuscles": [],
+    "equipment": "machines",
+    "category": "legs"
+  },
+  {
+    "id": "calf-raise",
+    "name": "Calf Raise",
+    "primaryMuscles": ["calves"],
+    "secondaryMuscles": [],
+    "equipment": "barbells",
+    "category": "legs"
+  },
+  {
+    "id": "machine-calf-raise",
+    "name": "Machine Calf Raise",
+    "primaryMuscles": ["calves"],
+    "secondaryMuscles": [],
+    "equipment": "machines",
+    "category": "legs"
+  },
+  {
+    "id": "dumbbell-calf-raise",
+    "name": "Dumbbell Calf Raise",
+    "primaryMuscles": ["calves"],
+    "secondaryMuscles": [],
+    "equipment": "dumbbells",
+    "category": "legs"
+  },
+  {
+    "id": "plank",
+    "name": "Plank",
+    "primaryMuscles": ["core"],
+    "secondaryMuscles": ["shoulders", "back"],
+    "equipment": "bodyweight",
+    "category": "core"
+  },
+  {
+    "id": "cable-crunch",
+    "name": "Cable Crunch",
+    "primaryMuscles": ["core"],
+    "secondaryMuscles": [],
+    "equipment": "cables",
+    "category": "core"
+  },
+  {
+    "id": "machine-crunch",
+    "name": "Machine Crunch",
+    "primaryMuscles": ["core"],
+    "secondaryMuscles": [],
+    "equipment": "machines",
+    "category": "core"
+  },
+  {
+    "id": "hanging-leg-raise",
+    "name": "Hanging Leg Raise",
+    "primaryMuscles": ["core"],
+    "secondaryMuscles": ["hip-flexors"],
+    "equipment": "bodyweight",
+    "category": "core"
+  },
+  {
+    "id": "ab-wheel-rollout",
+    "name": "Ab Wheel Rollout",
+    "primaryMuscles": ["core"],
+    "secondaryMuscles": ["shoulders"],
+    "equipment": "bodyweight",
+    "category": "core"
+  },
+  {
+    "id": "reverse-crunch",
+    "name": "Reverse Crunch",
+    "primaryMuscles": ["core"],
+    "secondaryMuscles": [],
+    "equipment": "bodyweight",
+    "category": "core"
+  },
+  {
+    "id": "russian-twist",
+    "name": "Russian Twist",
+    "primaryMuscles": ["core"],
+    "secondaryMuscles": [],
+    "equipment": "dumbbells",
+    "category": "core"
+  },
+  {
+    "id": "kettlebell-swing",
+    "name": "Kettlebell Swing",
+    "primaryMuscles": ["glutes", "hamstrings"],
+    "secondaryMuscles": ["core", "back"],
+    "equipment": "kettlebells",
+    "category": "cardio"
+  },
+  {
+    "id": "rowing-machine",
+    "name": "Rowing Machine",
+    "primaryMuscles": ["back", "biceps"],
+    "secondaryMuscles": ["core", "legs"],
+    "equipment": "machines",
+    "category": "cardio"
+  },
+  {
+    "id": "stationary-bike",
+    "name": "Stationary Bike",
+    "primaryMuscles": ["quads"],
+    "secondaryMuscles": ["glutes", "hamstrings"],
+    "equipment": "machines",
+    "category": "cardio"
+  },
+  {
+    "id": "treadmill",
+    "name": "Treadmill",
+    "primaryMuscles": ["quads", "hamstrings"],
+    "secondaryMuscles": ["glutes", "calves"],
+    "equipment": "machines",
+    "category": "cardio"
+  },
+  {
+    "id": "elliptical",
+    "name": "Elliptical",
+    "primaryMuscles": ["quads", "glutes"],
+    "secondaryMuscles": ["hamstrings", "back"],
+    "equipment": "machines",
+    "category": "cardio"
+  },
+  {
+    "id": "stair-climber",
+    "name": "Stair Climber",
+    "primaryMuscles": ["quads", "glutes"],
+    "secondaryMuscles": ["hamstrings", "calves"],
+    "equipment": "machines",
+    "category": "cardio"
+  },
+  {
+    "id": "battle-ropes",
+    "name": "Battle Ropes",
+    "primaryMuscles": ["shoulders", "core"],
+    "secondaryMuscles": ["biceps", "triceps"],
+    "equipment": "bodyweight",
+    "category": "cardio"
+  },
+  {
+    "id": "burpees",
+    "name": "Burpees",
+    "primaryMuscles": ["chest", "core"],
+    "secondaryMuscles": ["quads", "triceps"],
+    "equipment": "bodyweight",
+    "category": "cardio"
+  },
+  {
+    "id": "box-jump",
+    "name": "Box Jump",
+    "primaryMuscles": ["quads", "glutes"],
+    "secondaryMuscles": ["calves"],
+    "equipment": "bodyweight",
+    "category": "cardio"
+  },
+  {
+    "id": "mountain-climbers",
+    "name": "Mountain Climbers",
+    "primaryMuscles": ["core", "quads"],
+    "secondaryMuscles": ["shoulders", "chest"],
+    "equipment": "bodyweight",
+    "category": "cardio"
+  },
+  {
+    "id": "tuck-jump",
+    "name": "Tuck Jump",
+    "primaryMuscles": ["quads", "glutes"],
+    "secondaryMuscles": ["core"],
+    "equipment": "bodyweight",
+    "category": "cardio"
+  }
+]
