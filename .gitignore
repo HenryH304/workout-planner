@@ -1,0 +1,38 @@
+# Flutter
+.dart_tool/
+.packages
+build/
+*.iml
+.idea/
+.metadata
+*.lock
+
+# Firebase
+.firebase/
+firebase-debug.log
+
+# Ralph template files (not part of app)
+AGENTS.md
+cmd/
+flowchart/
+go-ralph.sh
+go.mod
+prompt.md
+ralph-overview.excalidraw
+ralph-overview.png
+ralph.log
+ralph.sh
+skills/
+.last-branch
+
+# Keep PRD docs
+!tasks/
+
+# IDE
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
