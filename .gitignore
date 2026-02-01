@@ -24,9 +24,8 @@ ralph.log
 ralph.sh
 skills/
 .last-branch
-
-# Keep PRD docs
-!tasks/
+prd.json
+progress.txt
 
 # IDE
 .vscode/
