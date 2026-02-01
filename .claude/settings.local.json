@@ -9,7 +9,27 @@
       "Bash(do:*)",
       "Bash(echo:*)",
       "Bash(done)",
-      "Bash(flutter analyze:*)"
+      "Bash(flutter analyze:*)",
+      "Bash(flutter doctor:*)",
+      "Bash(flutter emulators:*)",
+      "Bash(adb devices:*)",
+      "Bash(adb emu kill:*)",
+      "Bash(pkill:*)",
+      "Bash(flutter run:*)",
+      "Bash(codesign:*)",
+      "Bash(__NEW_LINE_490de6f51f1750ee__ echo \"\")",
+      "Bash(/Users/derrickheiberg/Library/Android/sdk/emulator/emulator:*)",
+      "Bash(__NEW_LINE_42183efc215e65dd__ echo \"\")",
+      "Bash(sysctl:*)",
+      "Bash(xattr:*)",
+      "Bash(__NEW_LINE_6aa1de4ccd8a9b69__ echo \"\")",
+      "Bash(__NEW_LINE_531c9792cf027322__ echo \"\")",
+      "Bash(sw_vers:*)",
+      "Bash(/usr/libexec/java_home:*)",
+      "Bash(source ~/.zshrc)",
+      "Bash(java:*)",
+      "Bash(~/Library/Android/sdk/cmdline-tools/latest/bin/sdkmanager:*)",
+      "Bash(adb shell:*)"
     ]
   }
 }

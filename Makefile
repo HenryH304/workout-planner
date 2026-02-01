@@ -1,4 +1,4 @@
-.PHONY: help deps clean test test-coverage build-android build-apk build-aab install-android run-android run-web run-ios run-macos simulator analyze format
+.PHONY: help deps clean test test-coverage build-android build-apk build-aab install-android run-android run-web run-ios run-macos simulator analyze format emulator android
 
 # Default target
 help:
@@ -17,11 +17,13 @@ help:
 	@echo "  make test-widget   - Run widget tests only"
 	@echo ""
 	@echo "Android:"
+	@echo "  make android       - Start emulator (if needed) and run app"
+	@echo "  make emulator      - Start Android emulator and wait for boot"
 	@echo "  make build-apk     - Build debug APK"
 	@echo "  make build-apk-release - Build release APK"
 	@echo "  make build-aab     - Build release App Bundle (for Play Store)"
 	@echo "  make install-android - Install APK on connected device"
-	@echo "  make run-android   - Run app on connected Android device"
+	@echo "  make run-android   - Run app on connected Android device (must be running)"
 	@echo ""
 	@echo "iOS:"
 	@echo "  make simulator     - Open iOS Simulator"
@@ -95,6 +97,33 @@ run-android:
 	fi; \
 	echo "Running on device: $$DEVICE_ID"; \
 	flutter run -d "$$DEVICE_ID"
+
+# Default emulator name (override with: make emulator EMU=Galaxy_S21_5G)
+EMU ?= Medium_Phone_API_36.1
+ANDROID_SDK ?= $(HOME)/Library/Android/sdk
+
+emulator:
+	@DEVICE_ID=$$(adb devices 2>/dev/null | grep -E 'emulator.*device$$' | cut -f1); \
+	if [ -n "$$DEVICE_ID" ]; then \
+		echo "Emulator already running: $$DEVICE_ID"; \
+		exit 0; \
+	fi; \
+	echo "Starting emulator: $(EMU) (using software rendering for stability)..."; \
+	$(ANDROID_SDK)/emulator/emulator -avd $(EMU) -no-snapshot -gpu swiftshader_indirect > /dev/null 2>&1 & \
+	echo "Waiting for emulator to boot..."; \
+	for i in $$(seq 1 90); do \
+		STATE=$$(adb devices 2>/dev/null | grep emulator | awk '{print $$2}'); \
+		BOOT=$$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r'); \
+		if [ "$$STATE" = "device" ] && [ "$$BOOT" = "1" ]; then \
+			echo "Emulator ready!"; \
+			exit 0; \
+		fi; \
+		sleep 2; \
+	done; \
+	echo "Emulator boot timed out"; \
+	exit 1
+
+android: emulator run-android
 
 # ============================================
 # iOS

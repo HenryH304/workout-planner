@@ -198,14 +198,19 @@ class _ExerciseLoggingModalState extends State<ExerciseLoggingModal> {
                 onTap: () => setState(() => _weight = _weight > 2.5 ? _weight - 2.5 : 0),
                 child: const Icon(Icons.remove_circle_outline, color: primaryBlue, size: 20),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Text(
-                  '${_weight.toStringAsFixed(1)}kg',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: textDark,
+              Flexible(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      '${_weight.toStringAsFixed(1)}kg',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: textDark,
+                      ),
+                    ),
                   ),
                 ),
               ),
