@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('US-005: Exercise database JSON', () {
     test('exercises.json exists and is valid JSON', () async {
       final jsonString = await rootBundle.loadString('assets/exercises.json');

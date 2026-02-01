@@ -98,8 +98,8 @@ void main() {
     });
 
     test('Bench press has tricep overlap defined', () {
-      expect(COMPOUND_OVERLAP_MAP.containsKey('bench-press'), isTrue);
-      expect(COMPOUND_OVERLAP_MAP['bench-press']!.containsKey('triceps'), isTrue);
+      expect(COMPOUND_OVERLAP_MAP.containsKey('barbell-bench-press'), isTrue);
+      expect(COMPOUND_OVERLAP_MAP['barbell-bench-press']!.containsKey('triceps'), isTrue);
     });
 
     test('Compound movement overlap is between 0 and 1', () {

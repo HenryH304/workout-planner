@@ -9,8 +9,8 @@ void main() {
     group('WorkoutType enum', () {
       test('WorkoutType has all required types', () {
         final types = WorkoutType.values.map((t) => t.name).toList();
-        expect(types, containsAll(['push', 'pull', 'legs', 'rest', 'cardio']));
-        expect(WorkoutType.values.length, equals(5));
+        expect(types, containsAll(['push', 'pull', 'legs', 'core', 'rest', 'cardio']));
+        expect(WorkoutType.values.length, equals(6));
       });
     });
 

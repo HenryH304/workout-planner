@@ -3,6 +3,8 @@ import 'package:workout_planner/services/exercise_service.dart';
 import 'package:workout_planner/models/workout_type.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('US-006: Exercise service', () {
     late ExerciseService exerciseService;
 
