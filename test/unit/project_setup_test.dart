@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_planner/main.dart';
 import 'package:workout_planner/screens/home_screen.dart';

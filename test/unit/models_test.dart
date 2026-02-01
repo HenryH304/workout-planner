@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_planner/models/user_profile.dart';
 import 'package:workout_planner/models/muscle_fatigue.dart';
+import 'package:workout_planner/models/muscle_group.dart';
 
 void main() {
   group('US-002: Core data models', () {

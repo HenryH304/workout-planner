@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart'; // Reuse placeholder
-import '../screens/home_screen.dart';
+import 'home_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({Key? key}) : super(key: key);

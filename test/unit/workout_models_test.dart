@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_planner/models/exercise.dart';
 import 'package:workout_planner/models/exercise_set.dart';
 import 'package:workout_planner/models/workout_log.dart';
+import 'package:workout_planner/models/workout_type.dart';
 
 void main() {
   group('US-003: Exercise and workout models', () {
