@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter test:*)",
+      "Bash(flutter devices:*)",
+      "Bash(flutter create:*)",
+      "Bash(make run-android:*)",
+      "Bash(for file in AGENTS.md prompt.md ralph.sh)",
+      "Bash(do:*)",
+      "Bash(echo:*)",
+      "Bash(done)",
+      "Bash(flutter analyze:*)"
+    ]
+  }
+}

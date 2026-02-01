@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:workout_planner/main.dart';
-import 'package:workout_planner/screens/home_screen.dart';
+import 'package:workout_planner/screens/main_shell.dart';
+import 'package:workout_planner/screens/today_screen.dart';
 
 void main() {
   group('US-001: Flutter project setup with Firebase', () {
@@ -41,28 +42,43 @@ void main() {
 
       // Verify MaterialApp is properly configured
       expect(find.byType(MaterialApp), findsOneWidget);
-      expect(find.byType(HomeScreen), findsOneWidget);
+      // MainShell is now the home widget (contains bottom nav with Today/Forecast/History/Profile)
+      expect(find.byType(MainShell), findsOneWidget);
     });
 
-    testWidgets('HomeScreen is the initial home widget',
+    testWidgets('MainShell is the initial home widget with TodayScreen',
         (WidgetTester tester) async {
       await tester.pumpWidget(const MyApp());
 
-      // Find the home screen widget
-      expect(find.byType(HomeScreen), findsOneWidget);
+      // Find the main shell widget
+      expect(find.byType(MainShell), findsOneWidget);
 
-      // Verify welcome text is displayed
-      expect(find.text('Welcome to Workout Planner'), findsOneWidget);
-      expect(find.text('Your intelligent fitness companion'), findsOneWidget);
+      // Verify TodayScreen is displayed as the first tab
+      expect(find.byType(TodayScreen), findsOneWidget);
+
+      // Verify bottom navigation exists
+      expect(find.byType(BottomNavigationBar), findsOneWidget);
     });
 
-    testWidgets('AppBar displays title in HomeScreen',
+    testWidgets('AppBar displays Today title in TodayScreen',
         (WidgetTester tester) async {
       await tester.pumpWidget(const MyApp());
 
       // Verify AppBar with title exists
       expect(find.byType(AppBar), findsOneWidget);
-      expect(find.text('Workout Planner'), findsOneWidget);
+      // "Today" appears in both AppBar and bottom nav
+      expect(find.text('Today'), findsAtLeastNWidgets(1));
+    });
+
+    testWidgets('Bottom navigation has 4 tabs',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(const MyApp());
+
+      // Verify 4 navigation items exist (Today appears twice: AppBar + nav)
+      expect(find.text('Today'), findsAtLeastNWidgets(1));
+      expect(find.text('Forecast'), findsOneWidget);
+      expect(find.text('History'), findsOneWidget);
+      expect(find.text('Profile'), findsOneWidget);
     });
 
     test('main.dart has correct structure', () {

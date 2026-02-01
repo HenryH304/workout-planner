@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
+import 'today_screen.dart';
+import 'forecast_screen.dart';
+import 'history_screen.dart';
+import 'profile_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({Key? key}) : super(key: key);
@@ -11,10 +14,10 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _selectedIndex = 0;
   final List<Widget> _screens = [
-    const HomeScreen(), // Today
-    const Placeholder(), // Forecast (US-025)
-    const Placeholder(), // History (US-026)
-    const Placeholder(), // Profile (US-028)
+    const TodayScreen(),
+    const ForecastScreen(),
+    const HistoryScreen(),
+    const ProfileScreen(),
   ];
 
   @override
@@ -25,6 +28,7 @@ class _MainShellState extends State<MainShell> {
         children: _screens,
       ),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: (index) {
           setState(() => _selectedIndex = index);
