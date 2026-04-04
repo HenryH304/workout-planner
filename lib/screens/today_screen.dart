@@ -48,6 +48,13 @@ class _TodayScreenState extends State<TodayScreen> {
     _initializeExercises();
   }
 
+  @override
+  void deactivate() {
+    // Clear any pending undo snackbars so undo is not available after navigating away
+    ScaffoldMessenger.of(context).clearSnackBars();
+    super.deactivate();
+  }
+
   Future<void> _initializeExercises() async {
     try {
       _allExercises = await _exerciseService.loadExercises();
