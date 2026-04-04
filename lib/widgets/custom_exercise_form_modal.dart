@@ -197,9 +197,11 @@ class _CustomExerciseFormModalState extends State<CustomExerciseFormModal> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Create Custom Exercise',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                Text(
+                  widget.initialExercise != null
+                      ? 'Edit Custom Exercise'
+                      : 'Create Custom Exercise',
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),

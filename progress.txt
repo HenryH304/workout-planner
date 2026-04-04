@@ -139,3 +139,22 @@ Started: Sat, 04 Apr 2026 14:29:02 BST
   - MuscleGroup enum (from `lib/models/muscle_group.dart`) provides standard muscle list; equipment options are: barbells, dumbbells, cables, machines, bodyweight, kettlebells
   - When nesting bottom sheets (form inside picker), pop the inner sheet with the result, then call onSelected on the outer picker
 ---
+
+## 2026-04-04 - US-027
+- Implemented MyExercisesScreen accessible from Profile screen via "My Exercises" button
+- Lists all user-created custom exercises with name, muscle groups (capitalized), and category
+- Tap exercise to edit using CustomExerciseFormModal (pre-filled with initialExercise, title changes to "Edit Custom Exercise")
+- Swipe-left (Dismissible) and long-press → Delete with confirmation dialog: "Delete [Name]? It will be removed from future selection."
+- Deletion removes from Firestore via CustomExerciseService.deleteCustomExercise
+- Empty state shown when no custom exercises: "No custom exercises yet. Add one from the workout screen."
+- Star icon on each exercise card (consistent with custom exercise indicator in picker)
+- StreamBuilder listens to real-time updates from CustomExerciseService.getCustomExercises
+- 12 unit tests covering: list exercises, empty state, edit (name, muscles, duplicate rejection, same-name update), delete (removes from Firestore, doesn't affect others), model round-trip
+- Files changed: `lib/screens/my_exercises_screen.dart` (new), `lib/screens/profile_screen.dart` (updated — added My Exercises navigation), `lib/widgets/custom_exercise_form_modal.dart` (updated — dynamic title for edit vs create), `test/unit/my_exercises_screen_test.dart` (new), `tasks/prd-workout-plan-editing.md` (updated), `prd.json` (updated)
+- **Patterns added to Codebase Patterns:** None - no new patterns discovered
+- **Learnings for future iterations:**
+  - CustomExerciseFormModal already supports `initialExercise` param for editing — just pass it and the form pre-fills all fields
+  - MyExercisesScreen uses injectable CustomExerciseService (constructor param) following the same pattern as other Firebase services in widgets
+  - StreamBuilder on getCustomExercises provides real-time updates — no manual refresh needed after edit/delete
+  - Profile screen uses _buildActionButton helper for navigation items — reuse for new sections
+---
