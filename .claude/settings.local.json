@@ -29,7 +29,12 @@
       "Bash(source ~/.zshrc)",
       "Bash(java:*)",
       "Bash(~/Library/Android/sdk/cmdline-tools/latest/bin/sdkmanager:*)",
-      "Bash(adb shell:*)"
+      "Bash(adb shell:*)",
+      "WebFetch(domain:docs.claude.com)",
+      "Bash(flutter pub get:*)",
+      "Bash(flutter build:*)",
+      "Bash(ls:*)",
+      "Bash(realpath:*)"
     ]
   }
 }

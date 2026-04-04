@@ -32,6 +32,9 @@ progress.txt
 *.swp
 *.swo
 
+# Build output
+dist/
+
 # OS
 .DS_Store
 Thumbs.db
