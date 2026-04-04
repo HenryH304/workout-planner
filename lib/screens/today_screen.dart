@@ -109,6 +109,73 @@ class _TodayScreenState extends State<TodayScreen> {
   bool _isUserAdded(String exerciseId) =>
       _notifier.currentState.edits.added.contains(exerciseId);
 
+  void _removeExercise(Exercise exercise, int index) {
+    final isLogged = _completedExerciseIds.contains(exercise.id);
+
+    if (isLogged) {
+      _showLoggedRemoveConfirmation(exercise, index);
+    } else {
+      _performRemove(exercise, index);
+    }
+  }
+
+  void _showLoggedRemoveConfirmation(Exercise exercise, int index) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Remove Logged Exercise?'),
+        content: Text(
+          'This exercise has been logged. Remove ${exercise.name} and its log?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _performRemove(exercise, index);
+              _completedExerciseIds.remove(exercise.id);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _performRemove(Exercise exercise, int index) {
+    setState(() {
+      _notifier.removeExercise(exercise.id);
+    });
+    _notifier.persistEdits();
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${exercise.name} removed.'),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {
+            setState(() {
+              _notifier.undoRemove(exercise.id, index, exercise);
+            });
+            _notifier.persistEdits();
+          },
+        ),
+        duration: const Duration(seconds: 5),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
   List<Exercise> _defaultExercises() => [
         ..._defaultPushExercises(),
         ..._defaultPullExercises(),
@@ -724,91 +791,116 @@ class _TodayScreenState extends State<TodayScreen> {
                 final isCompleted = _completedExerciseIds.contains(exercise.id);
                 final isAdded = _isUserAdded(exercise.id);
 
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: isCompleted
-                      ? Border.all(color: successGreen, width: 2)
-                      : isAdded
-                        ? Border.all(color: addedTagColor.withValues(alpha: 0.3), width: 1)
-                        : null,
+                return Dismissible(
+                  key: ValueKey(exercise.id),
+                  direction: DismissDirection.endToStart,
+                  confirmDismiss: (direction) async {
+                    if (isCompleted) {
+                      _showLoggedRemoveConfirmation(exercise, index);
+                      return false; // Dialog handles removal
+                    }
+                    return true;
+                  },
+                  onDismissed: (_) => _performRemove(exercise, index),
+                  background: Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.only(right: 20),
+                    child: const Icon(Icons.delete, color: Colors.white),
                   ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    leading: Container(
-                      width: 48,
-                      height: 48,
+                  child: GestureDetector(
+                    onLongPress: () => _removeExercise(exercise, index),
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 12),
                       decoration: BoxDecoration(
-                        color: isCompleted
-                          ? successGreen.withValues(alpha: 0.15)
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: isCompleted
+                          ? Border.all(color: successGreen, width: 2)
                           : isAdded
-                            ? addedTagColor.withValues(alpha: 0.1)
-                            : primaryBlue.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
+                            ? Border.all(color: addedTagColor.withValues(alpha: 0.3), width: 1)
+                            : null,
                       ),
-                      child: Icon(
-                        isCompleted ? Icons.check : Icons.fitness_center,
-                        color: isCompleted
-                          ? successGreen
-                          : isAdded
-                            ? addedTagColor
-                            : primaryBlue,
-                      ),
-                    ),
-                    title: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            exercise.name,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              decoration: isCompleted ? TextDecoration.lineThrough : null,
-                              color: isCompleted ? textGray : null,
-                            ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        leading: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: isCompleted
+                              ? successGreen.withValues(alpha: 0.15)
+                              : isAdded
+                                ? addedTagColor.withValues(alpha: 0.1)
+                                : primaryBlue.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            isCompleted ? Icons.check : Icons.fitness_center,
+                            color: isCompleted
+                              ? successGreen
+                              : isAdded
+                                ? addedTagColor
+                                : primaryBlue,
                           ),
                         ),
-                        if (isAdded)
-                          Container(
-                            margin: const EdgeInsets.only(left: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: addedTagColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Text(
-                              'Added by you',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: addedTagColor,
+                        title: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                exercise.name,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  decoration: isCompleted ? TextDecoration.lineThrough : null,
+                                  color: isCompleted ? textGray : null,
+                                ),
                               ),
                             ),
+                            if (isAdded)
+                              Container(
+                                margin: const EdgeInsets.only(left: 8),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: addedTagColor.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Text(
+                                  'Added by you',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: addedTagColor,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        subtitle: Text(
+                          exercise.primaryMuscles.join(', '),
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        trailing: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: isCompleted ? successGreen : primaryBlue,
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                      ],
-                    ),
-                    subtitle: Text(
-                      exercise.primaryMuscles.join(', '),
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    trailing: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: isCompleted ? successGreen : primaryBlue,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(
-                        isCompleted ? Icons.check : Icons.arrow_forward,
-                        color: Colors.white,
-                        size: 18,
+                          child: Icon(
+                            isCompleted ? Icons.check : Icons.arrow_forward,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ),
+                        onTap: isCompleted ? null : () => _openExerciseModal(exercise),
                       ),
                     ),
-                    onTap: isCompleted ? null : () => _openExerciseModal(exercise),
                   ),
                 );
               },
