@@ -15,6 +15,7 @@ Started: Sat, 04 Apr 2026 14:29:02 BST
 - Use `notifier.currentState` (not `.state`) to read TodayWorkoutNotifier state from UI — `.state` is protected
 - TodayWorkoutNotifier uses lazy Firestore access (getter, not constructor) to avoid Firebase init crashes in tests
 - Use `deactivate()` not `dispose()` when calling `ScaffoldMessenger.of(context)` — context is invalid in dispose
+- Firebase services (CustomExerciseService, etc.) in widget State must use lazy getter pattern, not field initializers, to avoid Firebase init crashes in tests
 ---
 
 ## 2026-04-04 - US-021
@@ -118,4 +119,23 @@ Started: Sat, 04 Apr 2026 14:29:02 BST
   - FilterChip with onSelected toggle provides a clean UX for enabling/disabling muscle filter
   - Swap icon uses GestureDetector inside trailing Row alongside the existing arrow/check button
   - When swapping a logged exercise, must remove the original from `_completedExerciseIds` before opening picker
+---
+
+## 2026-04-04 - US-026
+- Implemented CustomExerciseFormModal widget with form fields: Name, Primary muscles (multi-select), Secondary muscles (multi-select), Equipment (single-select), Category (choice chips), Notes
+- Extracted CustomExerciseFormHelper with pure validation logic (validateName, validatePrimaryMuscles, validateCategory, isFormValid, buildExercise)
+- Added "Create Custom Exercise" button (star icon, orange) to ExercisePicker — opens form as nested bottom sheet
+- After saving, exercise is auto-selected in picker (closes both form and picker)
+- Custom exercises show star icon in picker list items
+- ExercisePicker now accepts onCreateCustomExercise callback and existingCustomExerciseNames for duplicate checking
+- Today screen wires up CustomExerciseService for creating exercises and passes callback to both Add and Swap picker flows
+- Used lazy getter pattern for CustomExerciseService in TodayScreenState to avoid Firebase init crashes in tests
+- 17 unit tests covering: name validation (empty, whitespace, too long, duplicate case-insensitive), primary muscle validation, category validation, buildExercise, isFormValid
+- Files changed: `lib/widgets/custom_exercise_form_modal.dart` (new), `lib/widgets/exercise_picker.dart` (updated), `lib/screens/today_screen.dart` (updated), `test/unit/custom_exercise_creation_test.dart` (new)
+- **Patterns added to Codebase Patterns:** Lazy service instantiation pattern for Firebase services in widget state
+- **Learnings for future iterations:**
+  - CustomExerciseService must use lazy getter in widget State classes (same pattern as TodayWorkoutNotifier) to avoid Firebase crashes in widget tests
+  - ExercisePicker.show now accepts onCreateCustomExercise and existingCustomExerciseNames params
+  - MuscleGroup enum (from `lib/models/muscle_group.dart`) provides standard muscle list; equipment options are: barbells, dumbbells, cables, machines, bodyweight, kettlebells
+  - When nesting bottom sheets (form inside picker), pop the inner sheet with the result, then call onSelected on the outer picker
 ---
