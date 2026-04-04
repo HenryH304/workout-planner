@@ -12,6 +12,8 @@ Started: Sat, 04 Apr 2026 14:29:02 BST
 - Providers go in `lib/providers/`, use StateNotifier<T> pattern with injectable Firestore
 - WorkoutLog.edits is optional — existing code/services ignore it; only TodayWorkoutNotifier writes it
 - PlanEdits tracks added/removed/swapped separately; removing a user-added exercise cleans up added list (not removed)
+- Use `notifier.currentState` (not `.state`) to read TodayWorkoutNotifier state from UI — `.state` is protected
+- TodayWorkoutNotifier uses lazy Firestore access (getter, not constructor) to avoid Firebase init crashes in tests
 ---
 
 ## 2026-04-04 - US-021
@@ -51,4 +53,23 @@ Started: Sat, 04 Apr 2026 14:29:02 BST
   - When removing a user-added exercise, clean it from edits.added (not edits.removed) to avoid double-tracking
   - WorkoutLog.edits is null-safe — old documents without edits field parse fine
   - RecommendationService and FatigueService read from fatigue collection and workout exercises array — edits field is invisible to them by design
+---
+
+## 2026-04-04 - US-022
+- Integrated TodayWorkoutNotifier into Today screen, replacing hardcoded Map-based exercise data with Exercise model objects
+- Added "Add Exercise" button below exercise list that opens ExercisePicker bottom sheet
+- Added "Added by you" purple tag/badge on user-added exercises with subtle border and icon color
+- ExercisePicker receives excludeIds from current exercises to prevent duplicates
+- Added exercises support full logging via existing ExerciseLoggingModal
+- Additions persisted to Firestore via notifier.persistEdits() (edits.added tracks IDs)
+- Made TodayWorkoutNotifier.state accessible via public `currentState` getter to avoid protected member violations
+- Changed Firestore initialization in TodayWorkoutNotifier to lazy getter to prevent Firebase crashes in widget tests
+- Files changed: `lib/screens/today_screen.dart` (rewritten), `lib/providers/today_workout_notifier.dart` (updated), `test/unit/add_exercise_test.dart` (new, 11 tests)
+- **Patterns added to Codebase Patterns:** `currentState` getter pattern, lazy Firestore access pattern
+- **Learnings for future iterations:**
+  - Today screen now uses Exercise objects from ExerciseService + fallback defaults — no more hardcoded Maps
+  - StateNotifier.state is protected — expose via a public getter (`currentState`) for UI consumers
+  - FirebaseFirestore.instance in a constructor crashes widget tests — use a lazy getter instead
+  - Exercise completion tracking now uses exercise IDs (Set<String>) instead of indices
+  - The Today screen initializes its notifier in initState and re-initializes on workout type change
 ---
