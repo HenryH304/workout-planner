@@ -100,3 +100,22 @@ Started: Sat, 04 Apr 2026 14:29:02 BST
   - Use `deactivate()` not `dispose()` to call `ScaffoldMessenger.of(context)` — in dispose the context is already deactivated and causes widget tree errors in tests
   - Most undo snackbar behavior was already implemented in US-023; US-024 focused on dedicated test coverage and navigation-away dismissal
 ---
+
+## 2026-04-04 - US-025
+- Implemented swap exercise functionality on Today's Plan
+- Added swap icon (↔) on each exercise card; tapping opens ExercisePicker pre-filtered by original exercise's primary muscle groups
+- Added `filterByMuscleGroups` static method to ExercisePickerHelper for muscle-based filtering
+- ExercisePicker now accepts `initialMuscleFilter` param with toggle chip to clear/re-apply muscle filter
+- Replacement exercise takes the exact position of the original in the list
+- "Swapped" orange visual tag on swapped exercises (similar to "Added by you" tag)
+- If original exercise was already logged, a confirmation dialog warns before proceeding and clears log data
+- Swap persisted to Firestore via PlanEdits.swapped (SwapRecord with originalId/replacementId)
+- 14 unit tests covering: position swap, edits tracking, persistence, muscle filtering, logged exercise warning
+- Files changed: `lib/screens/today_screen.dart` (updated), `lib/widgets/exercise_picker.dart` (updated), `test/unit/swap_exercise_test.dart` (new)
+- **Patterns added to Codebase Patterns:** None - no new patterns discovered
+- **Learnings for future iterations:**
+  - ExercisePicker.show now accepts `initialMuscleFilter` — pass the exercise's primaryMuscles to pre-filter for same muscle group
+  - FilterChip with onSelected toggle provides a clean UX for enabling/disabling muscle filter
+  - Swap icon uses GestureDetector inside trailing Row alongside the existing arrow/check button
+  - When swapping a logged exercise, must remove the original from `_completedExerciseIds` before opening picker
+---
