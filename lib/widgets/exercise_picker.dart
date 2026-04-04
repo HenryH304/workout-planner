@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import '../models/custom_exercise.dart';
 import '../models/exercise.dart';
 import '../models/workout_type.dart';
+import 'custom_exercise_form_modal.dart';
 
 /// Helper class with pure logic for filtering and grouping exercises.
 /// Extracted for testability.
@@ -70,6 +72,9 @@ class ExercisePicker extends StatefulWidget {
   final Set<String> excludeIds;
   final ValueChanged<Exercise> onSelected;
   final List<String> initialMuscleFilter;
+  final Future<CustomExercise?> Function(CustomExercise exercise)?
+      onCreateCustomExercise;
+  final List<String> existingCustomExerciseNames;
 
   const ExercisePicker({
     super.key,
@@ -77,6 +82,8 @@ class ExercisePicker extends StatefulWidget {
     this.excludeIds = const {},
     required this.onSelected,
     this.initialMuscleFilter = const [],
+    this.onCreateCustomExercise,
+    this.existingCustomExerciseNames = const [],
   });
 
   /// Shows the picker as a modal bottom sheet and returns the selected exercise.
@@ -85,6 +92,9 @@ class ExercisePicker extends StatefulWidget {
     required List<Exercise> exercises,
     Set<String> excludeIds = const {},
     List<String> initialMuscleFilter = const [],
+    Future<CustomExercise?> Function(CustomExercise exercise)?
+        onCreateCustomExercise,
+    List<String> existingCustomExerciseNames = const [],
   }) {
     return showModalBottomSheet<Exercise>(
       context: context,
@@ -94,6 +104,8 @@ class ExercisePicker extends StatefulWidget {
         exercises: exercises,
         excludeIds: excludeIds,
         initialMuscleFilter: initialMuscleFilter,
+        onCreateCustomExercise: onCreateCustomExercise,
+        existingCustomExerciseNames: existingCustomExerciseNames,
         onSelected: (exercise) => Navigator.of(context).pop(exercise),
       ),
     );
@@ -121,6 +133,28 @@ class _ExercisePickerState extends State<ExercisePicker> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _openCreateCustomExercise() async {
+    final result = await showModalBottomSheet<CustomExercise>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => CustomExerciseFormModal(
+        existingNames: widget.existingCustomExerciseNames,
+        onSave: (exercise) async {
+          final created =
+              await widget.onCreateCustomExercise?.call(exercise);
+          if (created != null && context.mounted) {
+            Navigator.pop(context, created);
+          }
+        },
+      ),
+    );
+
+    if (result != null) {
+      widget.onSelected(result);
+    }
   }
 
   List<Exercise> get _filteredExercises {
@@ -288,6 +322,25 @@ class _ExercisePickerState extends State<ExercisePicker> {
                 ],
               ),
             ),
+          // Create Custom Exercise button
+          if (widget.onCreateCustomExercise != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: OutlinedButton.icon(
+                onPressed: _openCreateCustomExercise,
+                icon: const Icon(Icons.star, size: 18),
+                label: const Text('Create Custom Exercise'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFFF97316),
+                  side: BorderSide(
+                      color: const Color(0xFFF97316).withValues(alpha: 0.4)),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
           // Exercise list grouped by category
           Expanded(
             child: _filteredExercises.isEmpty
@@ -350,6 +403,7 @@ class _ExercisePickerState extends State<ExercisePicker> {
 
       // Exercise items in this category
       for (final exercise in exercises) {
+        final isCustom = exercise is CustomExercise;
         items.add(
           Container(
             margin: const EdgeInsets.only(bottom: 6),
@@ -361,9 +415,20 @@ class _ExercisePickerState extends State<ExercisePicker> {
               dense: true,
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-              title: Text(
-                exercise.name,
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+              title: Row(
+                children: [
+                  if (isCustom)
+                    const Padding(
+                      padding: EdgeInsets.only(right: 4),
+                      child: Icon(Icons.star, size: 14, color: Color(0xFFF97316)),
+                    ),
+                  Expanded(
+                    child: Text(
+                      exercise.name,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    ),
+                  ),
+                ],
               ),
               subtitle: Text(
                 exercise.primaryMuscles.join(', '),

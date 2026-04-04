@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import '../models/custom_exercise.dart';
 import '../models/exercise.dart';
 import '../models/workout_type.dart';
 import '../providers/today_workout_notifier.dart';
+import '../services/custom_exercise_service.dart';
 import '../services/exercise_service.dart';
 import '../widgets/exercise_picker.dart';
 import 'exercise_logging_modal.dart';
@@ -23,7 +25,11 @@ class _TodayScreenState extends State<TodayScreen> {
   bool _workoutStarted = false;
   final Set<String> _completedExerciseIds = {};
   final ExerciseService _exerciseService = ExerciseService();
+  CustomExerciseService? _customExerciseServiceInstance;
+  CustomExerciseService get _customExerciseService =>
+      _customExerciseServiceInstance ??= CustomExerciseService();
   List<Exercise> _allExercises = [];
+  final List<String> _customExerciseNames = [];
 
   String _currentWorkoutType = 'Push';
   late TodayWorkoutNotifier _notifier;
@@ -109,6 +115,34 @@ class _TodayScreenState extends State<TodayScreen> {
       workoutId: 'workout-${DateTime.now().toIso8601String().substring(0, 10)}',
       recommendedExercises: recommended,
     );
+  }
+
+  Future<CustomExercise?> _createCustomExercise(
+      CustomExercise exercise) async {
+    try {
+      final created = await _customExerciseService.createCustomExercise(
+        'current-user',
+        exercise,
+      );
+      setState(() {
+        _allExercises.add(created);
+        _customExerciseNames.add(created.name);
+      });
+      return created;
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create exercise: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+      return null;
+    }
   }
 
   List<Exercise> get _currentExercises =>
@@ -238,6 +272,8 @@ class _TodayScreenState extends State<TodayScreen> {
       exercises: _allExercises,
       excludeIds: excludeIds,
       initialMuscleFilter: exercise.primaryMuscles,
+      onCreateCustomExercise: _createCustomExercise,
+      existingCustomExerciseNames: _customExerciseNames,
     );
 
     if (selected != null && mounted) {
@@ -637,6 +673,8 @@ class _TodayScreenState extends State<TodayScreen> {
       context,
       exercises: _allExercises,
       excludeIds: excludeIds,
+      onCreateCustomExercise: _createCustomExercise,
+      existingCustomExerciseNames: _customExerciseNames,
     );
 
     if (selected != null && mounted) {
