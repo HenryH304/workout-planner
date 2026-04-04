@@ -73,3 +73,19 @@ Started: Sat, 04 Apr 2026 14:29:02 BST
   - Exercise completion tracking now uses exercise IDs (Set<String>) instead of indices
   - The Today screen initializes its notifier in initState and re-initializes on workout type change
 ---
+
+## 2026-04-04 - US-023
+- Implemented remove exercise from today's plan with swipe-left (Dismissible) and long-press gestures
+- Unlogged exercises are removed immediately without confirmation
+- Logged exercises show a confirmation dialog: "This exercise has been logged. Remove it and its log?"
+- Removal triggers undo snackbar with 5-second timeout to restore exercise to original position
+- Removal persisted to Firestore via notifier.persistEdits()
+- 13 unit tests covering: recommended/user-added removal, order preservation, edits tracking, undo, persistence, recommended list immutability
+- Files changed: `lib/screens/today_screen.dart` (updated), `test/unit/remove_exercise_test.dart` (new)
+- **Patterns added to Codebase Patterns:** None - no new patterns discovered
+- **Learnings for future iterations:**
+  - Dismissible with confirmDismiss allows intercepting swipe for logged-exercise confirmation dialogs
+  - When using Dismissible with confirmDismiss returning false, handle the action in the dialog callback instead
+  - Long-press via GestureDetector wrapping the Dismissible child provides an alternative removal path
+  - Undo snackbar uses ScaffoldMessenger.of(context).clearSnackBars() before showing new one to prevent stacking
+---
