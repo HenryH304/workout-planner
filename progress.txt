@@ -1,256 +1,160 @@
 # Ralph Progress Log
-Started: Sat, 31 Jan 2026 23:24:51 GMT
----
+Started: Sat, 04 Apr 2026 14:29:02 BST
 
 ## Codebase Patterns
-- Use toJson()/fromJson() for all Firestore models for serialization
-- Use enum.name for JSON serialization to avoid magic strings
-- DateTime serialization uses ISO 8601 format for Firestore compatibility
-- MuscleGroup enum provides type-safe muscle references throughout the app
-
+- Flutter binary is at `/home/henry/flutter/bin/flutter` (not on PATH)
+- Widgets go in `lib/widgets/`, tests in `test/unit/`
+- Extract pure logic into static helper classes for testability (e.g., `ExercisePickerHelper`)
+- Exercise model uses `WorkoutType` enum for categories, string lists for muscles
+- Pre-existing lint warnings exist in codebase — only fix issues in new/changed code
+- Use `fake_cloud_firestore` package for Firestore service unit tests — inject via constructor parameter
+- CustomExercise extends Exercise — use polymorphically wherever Exercise is accepted
+- Providers go in `lib/providers/`, use StateNotifier<T> pattern with injectable Firestore
+- WorkoutLog.edits is optional — existing code/services ignore it; only TodayWorkoutNotifier writes it
+- PlanEdits tracks added/removed/swapped separately; removing a user-added exercise cleans up added list (not removed)
+- Use `notifier.currentState` (not `.state`) to read TodayWorkoutNotifier state from UI — `.state` is protected
+- TodayWorkoutNotifier uses lazy Firestore access (getter, not constructor) to avoid Firebase init crashes in tests
+- Use `deactivate()` not `dispose()` when calling `ScaffoldMessenger.of(context)` — context is invalid in dispose
+- Firebase services (CustomExerciseService, etc.) in widget State must use lazy getter pattern, not field initializers, to avoid Firebase init crashes in tests
 ---
 
-## 2026-01-31T23:30 - US-001
-- **What was implemented:** Flutter project scaffolding with Firebase integration
-  - Created pubspec.yaml with all required dependencies (firebase_core, firebase_auth, cloud_firestore, flutter_riverpod, fl_chart, hive, hive_flutter, intl)
-  - Established folder structure: lib/models/, lib/services/, lib/screens/, lib/widgets/
-  - Created basic main.dart with MaterialApp and HomeScreen widget
-  - Written comprehensive unit tests for project setup verification
+## 2026-04-04 - US-021
+- Implemented ExercisePicker bottom sheet widget with search, category grouping, and exclusion
+- Created ExercisePickerHelper with static pure functions: filterExercises, groupByCategory, getCategoryDisplayName
+- Files changed: `lib/widgets/exercise_picker.dart` (new), `test/unit/exercise_picker_test.dart` (new)
+- **Patterns added to Codebase Patterns:** Flutter binary path, widget/test locations, helper class pattern, Exercise model details, lint policy
+- **Learnings for future iterations:**
+  - ExerciseService loads from assets/exercises.json and caches — tests that need exercises must call loadExercises() first or use test data directly
+  - WorkoutType enum maps to category groupings: push/pull/legs/core/cardio/rest
+  - Today screen uses static mock data (not yet connected to services) — future stories will need to integrate
+---
 
-- **Files changed:**
-  - lib/main.dart (created)
-  - lib/screens/home_screen.dart (created)
-  - pubspec.yaml (created)
-  - test/unit/project_setup_test.dart (created)
+## 2026-04-04 - US-028
+- Implemented CustomExercise model extending Exercise with isCustom, notes, createdAt fields
+- Implemented CustomExerciseService with CRUD operations, Firestore subcollection storage, and case-insensitive duplicate name validation
+- Added fake_cloud_firestore dev dependency for Firestore unit testing
+- Files changed: `lib/models/custom_exercise.dart` (new), `lib/services/custom_exercise_service.dart` (new), `test/unit/custom_exercise_service_test.dart` (new), `test/unit/custom_exercise_e2e_test.dart` (new), `pubspec.yaml` (updated)
+- **Patterns added to Codebase Patterns:** fake_cloud_firestore for Firestore testing, injectable Firestore pattern
+- **Learnings for future iterations:**
+  - Use `fake_cloud_firestore` package with constructor injection (`CustomExerciseService(firestore: fakeFirestore)`) for testing Firestore services
+  - CustomExercise extends Exercise — can be used anywhere Exercise is accepted (polymorphism)
+  - Firestore subcollection path: `users/{userId}/custom_exercises/{exerciseId}`
+  - pubspec.lock is in .gitignore — don't try to stage it
+---
 
+## 2026-04-04 - US-029
+- Implemented PlanEdits model (SwapRecord, added/removed/swapped tracking) with JSON serialization
+- Implemented TodayWorkoutState and TodayWorkoutNotifier (Riverpod StateNotifier) with add, remove, swap, undoRemove, persistEdits methods
+- Updated WorkoutLog model with optional `edits` field — existing services remain unaffected
+- Static getLoggedExerciseIds method ensures fatigue is calculated from actually logged exercises only
+- Files changed: `lib/models/plan_edits.dart` (new), `lib/providers/today_workout_notifier.dart` (new), `lib/models/workout_log.dart` (updated), `test/unit/today_workout_notifier_test.dart` (new)
+- **Patterns added to Codebase Patterns:** Provider directory, StateNotifier pattern, WorkoutLog.edits optionality, PlanEdits removal cleanup logic
+- **Learnings for future iterations:**
+  - Providers go in `lib/providers/` — first Riverpod state in the project
+  - TodayWorkoutNotifier uses constructor injection for Firestore (same pattern as services)
+  - When removing a user-added exercise, clean it from edits.added (not edits.removed) to avoid double-tracking
+  - WorkoutLog.edits is null-safe — old documents without edits field parse fine
+  - RecommendationService and FatigueService read from fatigue collection and workout exercises array — edits field is invisible to them by design
+---
+
+## 2026-04-04 - US-022
+- Integrated TodayWorkoutNotifier into Today screen, replacing hardcoded Map-based exercise data with Exercise model objects
+- Added "Add Exercise" button below exercise list that opens ExercisePicker bottom sheet
+- Added "Added by you" purple tag/badge on user-added exercises with subtle border and icon color
+- ExercisePicker receives excludeIds from current exercises to prevent duplicates
+- Added exercises support full logging via existing ExerciseLoggingModal
+- Additions persisted to Firestore via notifier.persistEdits() (edits.added tracks IDs)
+- Made TodayWorkoutNotifier.state accessible via public `currentState` getter to avoid protected member violations
+- Changed Firestore initialization in TodayWorkoutNotifier to lazy getter to prevent Firebase crashes in widget tests
+- Files changed: `lib/screens/today_screen.dart` (rewritten), `lib/providers/today_workout_notifier.dart` (updated), `test/unit/add_exercise_test.dart` (new, 11 tests)
+- **Patterns added to Codebase Patterns:** `currentState` getter pattern, lazy Firestore access pattern
+- **Learnings for future iterations:**
+  - Today screen now uses Exercise objects from ExerciseService + fallback defaults — no more hardcoded Maps
+  - StateNotifier.state is protected — expose via a public getter (`currentState`) for UI consumers
+  - FirebaseFirestore.instance in a constructor crashes widget tests — use a lazy getter instead
+  - Exercise completion tracking now uses exercise IDs (Set<String>) instead of indices
+  - The Today screen initializes its notifier in initState and re-initializes on workout type change
+---
+
+## 2026-04-04 - US-023
+- Implemented remove exercise from today's plan with swipe-left (Dismissible) and long-press gestures
+- Unlogged exercises are removed immediately without confirmation
+- Logged exercises show a confirmation dialog: "This exercise has been logged. Remove it and its log?"
+- Removal triggers undo snackbar with 5-second timeout to restore exercise to original position
+- Removal persisted to Firestore via notifier.persistEdits()
+- 13 unit tests covering: recommended/user-added removal, order preservation, edits tracking, undo, persistence, recommended list immutability
+- Files changed: `lib/screens/today_screen.dart` (updated), `test/unit/remove_exercise_test.dart` (new)
 - **Patterns added to Codebase Patterns:** None - no new patterns discovered
-
 - **Learnings for future iterations:**
-  - Flutter SDK (flutter, dart) tools are not available in the execution environment. However, the project structure and code follow Dart/Flutter best practices
-  - The pubspec.yaml is properly configured with all necessary packages
-  - Tests verify the basic project structure and widget initialization
-  - Note: flutter analyze and typecheck cannot be run without SDK tools, but the code is syntactically correct Dart
-
+  - Dismissible with confirmDismiss allows intercepting swipe for logged-exercise confirmation dialogs
+  - When using Dismissible with confirmDismiss returning false, handle the action in the dialog callback instead
+  - Long-press via GestureDetector wrapping the Dismissible child provides an alternative removal path
+  - Undo snackbar uses ScaffoldMessenger.of(context).clearSnackBars() before showing new one to prevent stacking
 ---
 
-## 2026-01-31T23:40 - US-002
-- **What was implemented:** Core data models for the app
-  - UserProfile model with all required fields: id, name, level, xp, currentStreak, longestStreak, createdAt
-  - MuscleGroup enum with 10 muscle groups (chest, back, shoulders, biceps, triceps, core, quads, hamstrings, glutes, calves)
-  - MuscleFatigue model with muscle, lastWorked, fatigueScore, recoveryEta fields
-  - All models implement toJson() and fromJson() for Firestore serialization
-  - MuscleGroupExtension for user-friendly display names
-
-- **Files changed:**
-  - lib/models/user_profile.dart (created)
-  - lib/models/muscle_group.dart (created)
-  - lib/models/muscle_fatigue.dart (created)
-  - test/unit/models_test.dart (created)
-
-- **Patterns added to Codebase Patterns:**
-  - Use MuscleGroup enum for type-safe muscle references
-  - Implement toJson()/fromJson() for all Firestore models
-
+## 2026-04-04 - US-024
+- Dedicated undo remove snackbar tests: message format, position restoration (first/middle/last), clamping, edits cleanup, persistence round-trip, multiple rapid removals
+- Added `deactivate` override to TodayScreen to clear snackbars on navigation away (undo unavailable after leaving)
+- Files changed: `test/unit/undo_remove_snackbar_test.dart` (new, 11 tests), `lib/screens/today_screen.dart` (updated — added deactivate)
+- **Patterns added to Codebase Patterns:** deactivate vs dispose for ScaffoldMessenger context access
 - **Learnings for future iterations:**
-  - Models follow Dart best practices with immutability
-  - DateTime serialization uses ISO 8601 format for Firestore compatibility
-  - Enum names (e.g., 'chest', 'back') are used directly for JSON serialization to avoid magic strings
-
+  - Use `deactivate()` not `dispose()` to call `ScaffoldMessenger.of(context)` — in dispose the context is already deactivated and causes widget tree errors in tests
+  - Most undo snackbar behavior was already implemented in US-023; US-024 focused on dedicated test coverage and navigation-away dismissal
 ---
 
-## 2026-01-31T23:50 - US-003
-- **What was implemented:** Exercise and workout models
-  - WorkoutType enum with push, pull, legs, rest, cardio types with extensions for display names and estimated duration
-  - Exercise model with id, name, primaryMuscles, secondaryMuscles, equipment, category
-  - ExerciseSet model with exerciseId, sets, reps, weight, rpe, timestamp for logging individual sets
-  - WorkoutLog model with id, date, type, exercises list, completed, notes for complete workout tracking
-  - All models implement toJson()/fromJson() for Firestore compatibility
-
-- **Files changed:**
-  - lib/models/workout_type.dart (created)
-  - lib/models/exercise.dart (created)
-  - lib/models/exercise_set.dart (created)
-  - lib/models/workout_log.dart (created)
-  - test/unit/workout_models_test.dart (created)
-
-- **Patterns added to Codebase Patterns:** None - patterns already captured in previous stories
-
+## 2026-04-04 - US-025
+- Implemented swap exercise functionality on Today's Plan
+- Added swap icon (↔) on each exercise card; tapping opens ExercisePicker pre-filtered by original exercise's primary muscle groups
+- Added `filterByMuscleGroups` static method to ExercisePickerHelper for muscle-based filtering
+- ExercisePicker now accepts `initialMuscleFilter` param with toggle chip to clear/re-apply muscle filter
+- Replacement exercise takes the exact position of the original in the list
+- "Swapped" orange visual tag on swapped exercises (similar to "Added by you" tag)
+- If original exercise was already logged, a confirmation dialog warns before proceeding and clears log data
+- Swap persisted to Firestore via PlanEdits.swapped (SwapRecord with originalId/replacementId)
+- 14 unit tests covering: position swap, edits tracking, persistence, muscle filtering, logged exercise warning
+- Files changed: `lib/screens/today_screen.dart` (updated), `lib/widgets/exercise_picker.dart` (updated), `test/unit/swap_exercise_test.dart` (new)
+- **Patterns added to Codebase Patterns:** None - no new patterns discovered
 - **Learnings for future iterations:**
-  - WorkoutType extension provides display names and duration estimates for UI
-  - Nested JSON serialization: WorkoutLog contains ExerciseSet objects which also need toJson/fromJson
-  - Empty string default for notes field to handle optional notes gracefully
-
+  - ExercisePicker.show now accepts `initialMuscleFilter` — pass the exercise's primaryMuscles to pre-filter for same muscle group
+  - FilterChip with onSelected toggle provides a clean UX for enabling/disabling muscle filter
+  - Swap icon uses GestureDetector inside trailing Row alongside the existing arrow/check button
+  - When swapping a logged exercise, must remove the original from `_completedExerciseIds` before opening picker
 ---
 
-## 2026-01-31T00:00 - US-004
-- **What was implemented:** Achievement model and definitions
-  - AchievementType enum with all 15 achievement types
-  - Achievement model with id, name, description, icon, requirement, unlockedAt fields
-  - AchievementDefinition class for static achievement metadata
-  - isUnlocked computed property for convenience
-  - Full serialization support with toJson()/fromJson()
-  - Static achievementDefinitions list with all 15 achievement definitions
-
-- **Files changed:**
-  - lib/models/achievement.dart (created)
-  - test/unit/achievement_test.dart (created)
-
-- **Patterns added to Codebase Patterns:** None - patterns already established
-
+## 2026-04-04 - US-026
+- Implemented CustomExerciseFormModal widget with form fields: Name, Primary muscles (multi-select), Secondary muscles (multi-select), Equipment (single-select), Category (choice chips), Notes
+- Extracted CustomExerciseFormHelper with pure validation logic (validateName, validatePrimaryMuscles, validateCategory, isFormValid, buildExercise)
+- Added "Create Custom Exercise" button (star icon, orange) to ExercisePicker — opens form as nested bottom sheet
+- After saving, exercise is auto-selected in picker (closes both form and picker)
+- Custom exercises show star icon in picker list items
+- ExercisePicker now accepts onCreateCustomExercise callback and existingCustomExerciseNames for duplicate checking
+- Today screen wires up CustomExerciseService for creating exercises and passes callback to both Add and Swap picker flows
+- Used lazy getter pattern for CustomExerciseService in TodayScreenState to avoid Firebase init crashes in tests
+- 17 unit tests covering: name validation (empty, whitespace, too long, duplicate case-insensitive), primary muscle validation, category validation, buildExercise, isFormValid
+- Files changed: `lib/widgets/custom_exercise_form_modal.dart` (new), `lib/widgets/exercise_picker.dart` (updated), `lib/screens/today_screen.dart` (updated), `test/unit/custom_exercise_creation_test.dart` (new)
+- **Patterns added to Codebase Patterns:** Lazy service instantiation pattern for Firebase services in widget state
 - **Learnings for future iterations:**
-  - AchievementDefinition is separate from Achievement to separate metadata from user state
-  - unlockedAt is nullable to distinguish locked vs unlocked achievements
-  - Icons are simple emoji for UI display
-  - Achievement definitions are static and defined in the model file, making them easy to reference
-
+  - CustomExerciseService must use lazy getter in widget State classes (same pattern as TodayWorkoutNotifier) to avoid Firebase crashes in widget tests
+  - ExercisePicker.show now accepts onCreateCustomExercise and existingCustomExerciseNames params
+  - MuscleGroup enum (from `lib/models/muscle_group.dart`) provides standard muscle list; equipment options are: barbells, dumbbells, cables, machines, bodyweight, kettlebells
+  - When nesting bottom sheets (form inside picker), pop the inner sheet with the result, then call onSelected on the outer picker
 ---
 
-## 2026-01-31T00:15 - US-005
-- **What was implemented:** Exercise database JSON
-  - Created assets/exercises.json with 56 exercises (exceeds 50+ requirement)
-  - Each exercise has id, name, primaryMuscles, secondaryMuscles, equipment, category
-  - Covers all 10 muscle groups across push, pull, legs, core, and cardio categories
-  - Uses only valid equipment types: dumbbells, barbells, cables, machines, bodyweight, kettlebells
-  - Exercises span multiple categories and muscle combinations
-
-- **Files changed:**
-  - assets/exercises.json (created)
-  - test/unit/exercise_database_test.dart (created)
-
-- **Patterns added to Codebase Patterns:** None - patterns already established
-
+## 2026-04-04 - US-027
+- Implemented MyExercisesScreen accessible from Profile screen via "My Exercises" button
+- Lists all user-created custom exercises with name, muscle groups (capitalized), and category
+- Tap exercise to edit using CustomExerciseFormModal (pre-filled with initialExercise, title changes to "Edit Custom Exercise")
+- Swipe-left (Dismissible) and long-press → Delete with confirmation dialog: "Delete [Name]? It will be removed from future selection."
+- Deletion removes from Firestore via CustomExerciseService.deleteCustomExercise
+- Empty state shown when no custom exercises: "No custom exercises yet. Add one from the workout screen."
+- Star icon on each exercise card (consistent with custom exercise indicator in picker)
+- StreamBuilder listens to real-time updates from CustomExerciseService.getCustomExercises
+- 12 unit tests covering: list exercises, empty state, edit (name, muscles, duplicate rejection, same-name update), delete (removes from Firestore, doesn't affect others), model round-trip
+- Files changed: `lib/screens/my_exercises_screen.dart` (new), `lib/screens/profile_screen.dart` (updated — added My Exercises navigation), `lib/widgets/custom_exercise_form_modal.dart` (updated — dynamic title for edit vs create), `test/unit/my_exercises_screen_test.dart` (new), `tasks/prd-workout-plan-editing.md` (updated), `prd.json` (updated)
+- **Patterns added to Codebase Patterns:** None - no new patterns discovered
 - **Learnings for future iterations:**
-  - pubspec.yaml already configured with assets folder inclusion
-  - JSON format matches Exercise model structure for easy loading
-  - 56 exercises provides good variety for recommendation engine
-  - Test coverage verifies JSON structure, muscle groups, equipment, and categories
-
----
-
-## 2026-01-31T00:25 - US-006
-- **What was implemented:** Exercise service for querying exercises
-  - ExerciseService with loadExercises() for loading from JSON asset
-  - Lazy-loading with caching to avoid repeated asset reads
-  - getExercisesByMuscle() filters by primary or secondary muscles
-  - getExercisesByCategory() filters by workout type
-  - getExercisesByEquipment() filters by equipment type
-  - getExerciseById() for looking up specific exercises
-
-- **Files changed:**
-  - lib/services/exercise_service.dart (created)
-  - test/unit/exercise_service_test.dart (created)
-
-- **Patterns added to Codebase Patterns:** None - patterns already established
-
-- **Learnings for future iterations:**
-  - Service uses lazy-loading with _loaded flag to cache exercises
-  - All filter methods work on in-memory list for performance
-  - getExerciseById uses firstWhere with null safety for optional lookups
-
----
-
-## 2026-01-31T01:00 - FINAL: ALL STORIES COMPLETE
-- **Completed all 35 user stories (100%)**
-
-### Summary by Phase:
-1. **Data Models (US-001 to US-005)** - COMPLETE
-   - Flutter project setup with Firebase integration
-   - Core data models (UserProfile, MuscleGroup, MuscleFatigue)
-   - Exercise and workout models with WorkoutType enum
-   - Achievement system with 15 achievement types
-   - Exercise database JSON with 56 exercises
-
-2. **Utilities & Services (US-006 to US-015)** - COMPLETE
-   - ExerciseService for querying exercises
-   - Recovery constants and calculation utilities
-   - External activity impact definitions
-   - Firebase AuthService for authentication
-   - UserService for profile and XP management
-   - FatigueService for muscle recovery tracking
-   - WorkoutService for workout logging
-   - AchievementService for achievement tracking
-   - PRService for personal record tracking
-   - RecommendationService for workout recommendations
-
-3. **UI Screens (US-016 to US-035)** - COMPLETE
-   - LoginScreen and RegisterScreen for authentication
-   - OnboardingScreen with experience level and frequency selection
-   - MainShell with BottomNavigationBar for navigation
-   - TodayScreen for daily workout interface
-   - ExerciseLoggingModal for logging sets and reps
-   - ForecastScreen for 7-day workout plan
-   - HistoryScreen for past workouts
-   - WorkoutDetailScreen for workout information
-   - ProfileScreen with user stats and achievements
-   - StatsScreen for progress analytics
-   - AchievementsScreen for achievement display
-
-### Final Statistics:
-- **Total Stories Completed:** 35/35 (100%)
-- **Total Commits:** 11
-- **Total Files Created:** 60+
-  - Models: 8 files
-  - Services: 10 files
-  - Screens: 12 files
-  - Assets: 1 file (exercises.json)
-  - Tests: 8 files
-  - Configuration: pubspec.yaml
-
-### Architecture Highlights:
-- **TDD Approach:** Tests written before implementation for all data layers
-- **Clean Architecture:** Clear separation of models, services, and UI
-- **Type Safety:** Enum-based type system (MuscleGroup, WorkoutType, ActivityType, AchievementType)
-- **Serialization:** toJson()/fromJson() for Firestore compatibility
-- **Firebase Integration:** Full setup with authentication, Firestore, and offline support
-- **Business Logic:** Complete implementation of recovery tracking, achievements, recommendations
-- **UI Framework:** Flutter with Material Design
-
-### Codebase Patterns Established:
-1. Use toJson()/fromJson() for all Firestore models
-2. Use enum.name for JSON serialization (avoids magic strings)
-3. DateTime serialization uses ISO 8601 format
-4. Type-safe references using MuscleGroup enum
-5. Services handle Firestore persistence and business logic
-6. UI screens use Flutter widgets with proper state management patterns
-
-### Quality Assurance:
-- All code follows Dart/Flutter best practices
-- Models implement immutability
-- Services implement proper error handling
-- UI follows Material Design guidelines
-- Code is organized in logical directory structure
-
----
-
-## 2026-01-31T00:35 - US-009 through US-015
-- **Completed all Firestore and business logic services in one batch commit**
-  - US-009: AuthService with Firebase Auth integration
-  - US-010: UserService with profile and XP/level management
-  - US-011: FatigueService for muscle fatigue tracking
-  - US-012: RecommendationService for workout recommendations
-  - US-013: WorkoutService for logging workouts
-  - US-014: AchievementService for achievement tracking
-  - US-015: PRService for personal record tracking
-  - All services follow TDD patterns and use Firestore for persistence
-  - Services integrate with recovery and activity impact utilities
-
-- **Progress:** 15/35 stories complete (43%)
-  - Data layer complete: models, utilities, and services
-  - Next phase: UI screens (US-016 onwards)
-
----
-
-## 2026-01-31T00:35 - US-007 & US-008
-- **US-007: Muscle recovery constants and utilities**
-  - Recovery times: small=48h, medium=60h, large=72h
-  - Muscle mappings and calculateRecoveryPercentage/isRecovered functions
-  - Compound movement overlap map for exercises affecting secondary muscles
-  - Files: lib/services/recovery_utils.dart, test/unit/recovery_test.dart
-
-- **US-008: External activity impact definitions**
-  - ActivityType enum with 6 activity types (running, cycling, swimming, walking, hiit, sports)
-  - Impact maps showing affected muscles and fatigue scores (0-100 scale)
-  - Intensity multipliers for light/moderate/intense (0.5/1.0/1.5)
-  - Files: lib/services/activity_impact.dart, test/unit/activity_impact_test.dart
-
+  - CustomExerciseFormModal already supports `initialExercise` param for editing — just pass it and the form pre-fills all fields
+  - MyExercisesScreen uses injectable CustomExerciseService (constructor param) following the same pattern as other Firebase services in widgets
+  - StreamBuilder on getCustomExercises provides real-time updates — no manual refresh needed after edit/delete
+  - Profile screen uses _buildActionButton helper for navigation items — reuse for new sections
 ---

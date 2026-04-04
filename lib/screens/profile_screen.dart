@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'achievements_screen.dart';
+import 'my_exercises_screen.dart';
 import 'stats_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -293,6 +294,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 24),
+            // My Exercises section
+            SizedBox(
+              width: double.infinity,
+              child: _buildActionButton(
+                'My Exercises',
+                Icons.star,
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const MyExercisesScreen()),
+                ),
+              ),
             ),
             const SizedBox(height: 24),
             SizedBox(
