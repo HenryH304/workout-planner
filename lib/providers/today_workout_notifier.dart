@@ -34,13 +34,18 @@ class TodayWorkoutState {
 
 class TodayWorkoutNotifier extends StateNotifier<TodayWorkoutState> {
   final String userId;
-  final FirebaseFirestore _firestore;
+  final FirebaseFirestore? _injectedFirestore;
+  FirebaseFirestore get _firestore =>
+      _injectedFirestore ?? FirebaseFirestore.instance;
 
   TodayWorkoutNotifier({
     required this.userId,
     FirebaseFirestore? firestore,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+  })  : _injectedFirestore = firestore,
         super(const TodayWorkoutState());
+
+  /// Public read-only access to current state for UI consumers.
+  TodayWorkoutState get currentState => state;
 
   void initializePlan({
     required String workoutId,
