@@ -14,6 +14,7 @@ Started: Sat, 04 Apr 2026 14:29:02 BST
 - PlanEdits tracks added/removed/swapped separately; removing a user-added exercise cleans up added list (not removed)
 - Use `notifier.currentState` (not `.state`) to read TodayWorkoutNotifier state from UI — `.state` is protected
 - TodayWorkoutNotifier uses lazy Firestore access (getter, not constructor) to avoid Firebase init crashes in tests
+- Use `deactivate()` not `dispose()` when calling `ScaffoldMessenger.of(context)` — context is invalid in dispose
 ---
 
 ## 2026-04-04 - US-021
@@ -88,4 +89,14 @@ Started: Sat, 04 Apr 2026 14:29:02 BST
   - When using Dismissible with confirmDismiss returning false, handle the action in the dialog callback instead
   - Long-press via GestureDetector wrapping the Dismissible child provides an alternative removal path
   - Undo snackbar uses ScaffoldMessenger.of(context).clearSnackBars() before showing new one to prevent stacking
+---
+
+## 2026-04-04 - US-024
+- Dedicated undo remove snackbar tests: message format, position restoration (first/middle/last), clamping, edits cleanup, persistence round-trip, multiple rapid removals
+- Added `deactivate` override to TodayScreen to clear snackbars on navigation away (undo unavailable after leaving)
+- Files changed: `test/unit/undo_remove_snackbar_test.dart` (new, 11 tests), `lib/screens/today_screen.dart` (updated — added deactivate)
+- **Patterns added to Codebase Patterns:** deactivate vs dispose for ScaffoldMessenger context access
+- **Learnings for future iterations:**
+  - Use `deactivate()` not `dispose()` to call `ScaffoldMessenger.of(context)` — in dispose the context is already deactivated and causes widget tree errors in tests
+  - Most undo snackbar behavior was already implemented in US-023; US-024 focused on dedicated test coverage and navigation-away dismissal
 ---
