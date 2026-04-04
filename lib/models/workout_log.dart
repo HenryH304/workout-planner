@@ -1,4 +1,5 @@
 import 'exercise_set.dart';
+import 'plan_edits.dart';
 import 'workout_type.dart';
 
 class WorkoutLog {
@@ -8,6 +9,7 @@ class WorkoutLog {
   final List<ExerciseSet> exercises;
   final bool completed;
   final String notes;
+  final PlanEdits? edits;
 
   WorkoutLog({
     required this.id,
@@ -16,6 +18,7 @@ class WorkoutLog {
     required this.exercises,
     required this.completed,
     required this.notes,
+    this.edits,
   });
 
   Map<String, dynamic> toJson() {
@@ -26,6 +29,7 @@ class WorkoutLog {
       'exercises': exercises.map((e) => e.toJson()).toList(),
       'completed': completed,
       'notes': notes,
+      if (edits != null) 'edits': edits!.toJson(),
     };
   }
 
@@ -41,6 +45,9 @@ class WorkoutLog {
           .toList(),
       completed: json['completed'] as bool,
       notes: json['notes'] as String? ?? '',
+      edits: json['edits'] != null
+          ? PlanEdits.fromJson(Map<String, dynamic>.from(json['edits'] as Map))
+          : null,
     );
   }
 }
