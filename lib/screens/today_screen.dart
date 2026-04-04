@@ -18,6 +18,7 @@ class _TodayScreenState extends State<TodayScreen> {
   static const Color successGreen = Color(0xFF10B981);
   static const Color textGray = Color(0xFF6B7280);
   static const Color addedTagColor = Color(0xFF8B5CF6);
+  static const Color swappedTagColor = Color(0xFFF97316);
 
   bool _workoutStarted = false;
   final Set<String> _completedExerciseIds = {};
@@ -116,6 +117,10 @@ class _TodayScreenState extends State<TodayScreen> {
   bool _isUserAdded(String exerciseId) =>
       _notifier.currentState.edits.added.contains(exerciseId);
 
+  bool _isSwapped(String exerciseId) =>
+      _notifier.currentState.edits.swapped
+          .any((s) => s.replacementId == exerciseId);
+
   void _removeExercise(Exercise exercise, int index) {
     final isLogged = _completedExerciseIds.contains(exercise.id);
 
@@ -181,6 +186,69 @@ class _TodayScreenState extends State<TodayScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
+  }
+
+  void _swapExercise(Exercise exercise) {
+    final isLogged = _completedExerciseIds.contains(exercise.id);
+
+    if (isLogged) {
+      _showLoggedSwapWarning(exercise);
+    } else {
+      _openSwapPicker(exercise);
+    }
+  }
+
+  void _showLoggedSwapWarning(Exercise exercise) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Swap Logged Exercise?'),
+        content: Text(
+          '${exercise.name} has already been logged. Swapping will clear its log data. Continue?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _completedExerciseIds.remove(exercise.id);
+              _openSwapPicker(exercise);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: swappedTagColor,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Swap Anyway'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openSwapPicker(Exercise exercise) async {
+    final excludeIds =
+        _currentExercises.map((e) => e.id).toSet();
+
+    final selected = await ExercisePicker.show(
+      context,
+      exercises: _allExercises,
+      excludeIds: excludeIds,
+      initialMuscleFilter: exercise.primaryMuscles,
+    );
+
+    if (selected != null && mounted) {
+      setState(() {
+        _notifier.swapExercise(
+          originalId: exercise.id,
+          replacement: selected,
+        );
+      });
+      _notifier.persistEdits();
+    }
   }
 
   List<Exercise> _defaultExercises() => [
@@ -797,6 +865,7 @@ class _TodayScreenState extends State<TodayScreen> {
                 final exercise = exercises[index];
                 final isCompleted = _completedExerciseIds.contains(exercise.id);
                 final isAdded = _isUserAdded(exercise.id);
+                final isSwapped = _isSwapped(exercise.id);
 
                 return Dismissible(
                   key: ValueKey(exercise.id),
@@ -828,9 +897,11 @@ class _TodayScreenState extends State<TodayScreen> {
                         borderRadius: BorderRadius.circular(16),
                         border: isCompleted
                           ? Border.all(color: successGreen, width: 2)
-                          : isAdded
-                            ? Border.all(color: addedTagColor.withValues(alpha: 0.3), width: 1)
-                            : null,
+                          : isSwapped
+                            ? Border.all(color: swappedTagColor.withValues(alpha: 0.3), width: 1)
+                            : isAdded
+                              ? Border.all(color: addedTagColor.withValues(alpha: 0.3), width: 1)
+                              : null,
                       ),
                       child: ListTile(
                         contentPadding: const EdgeInsets.symmetric(
@@ -843,18 +914,22 @@ class _TodayScreenState extends State<TodayScreen> {
                           decoration: BoxDecoration(
                             color: isCompleted
                               ? successGreen.withValues(alpha: 0.15)
-                              : isAdded
-                                ? addedTagColor.withValues(alpha: 0.1)
-                                : primaryBlue.withValues(alpha: 0.1),
+                              : isSwapped
+                                ? swappedTagColor.withValues(alpha: 0.1)
+                                : isAdded
+                                  ? addedTagColor.withValues(alpha: 0.1)
+                                  : primaryBlue.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
                             isCompleted ? Icons.check : Icons.fitness_center,
                             color: isCompleted
                               ? successGreen
-                              : isAdded
-                                ? addedTagColor
-                                : primaryBlue,
+                              : isSwapped
+                                ? swappedTagColor
+                                : isAdded
+                                  ? addedTagColor
+                                  : primaryBlue,
                           ),
                         ),
                         title: Row(
@@ -869,7 +944,24 @@ class _TodayScreenState extends State<TodayScreen> {
                                 ),
                               ),
                             ),
-                            if (isAdded)
+                            if (isSwapped)
+                              Container(
+                                margin: const EdgeInsets.only(left: 8),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: swappedTagColor.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Text(
+                                  'Swapped',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: swappedTagColor,
+                                  ),
+                                ),
+                              )
+                            else if (isAdded)
                               Container(
                                 margin: const EdgeInsets.only(left: 8),
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -892,18 +984,41 @@ class _TodayScreenState extends State<TodayScreen> {
                           exercise.primaryMuscles.join(', '),
                           style: const TextStyle(fontSize: 12),
                         ),
-                        trailing: Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: isCompleted ? successGreen : primaryBlue,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            isCompleted ? Icons.check : Icons.arrow_forward,
-                            color: Colors.white,
-                            size: 18,
-                          ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (!isCompleted)
+                              GestureDetector(
+                                onTap: () => _swapExercise(exercise),
+                                child: Container(
+                                  width: 32,
+                                  height: 32,
+                                  margin: const EdgeInsets.only(right: 8),
+                                  decoration: BoxDecoration(
+                                    color: swappedTagColor.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.swap_horiz,
+                                    color: swappedTagColor,
+                                    size: 18,
+                                  ),
+                                ),
+                              ),
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: isCompleted ? successGreen : primaryBlue,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                isCompleted ? Icons.check : Icons.arrow_forward,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                          ],
                         ),
                         onTap: isCompleted ? null : () => _openExerciseModal(exercise),
                       ),

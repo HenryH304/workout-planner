@@ -30,6 +30,20 @@ class ExercisePickerHelper {
     return grouped;
   }
 
+  /// Filters exercises whose primaryMuscles overlap with the given muscle groups.
+  /// Returns all exercises if muscleGroups is empty.
+  static List<Exercise> filterByMuscleGroups(
+    List<Exercise> exercises,
+    List<String> muscleGroups,
+  ) {
+    if (muscleGroups.isEmpty) return exercises;
+    final muscleSet = muscleGroups.map((m) => m.toLowerCase()).toSet();
+    return exercises.where((exercise) {
+      return exercise.primaryMuscles
+          .any((m) => muscleSet.contains(m.toLowerCase()));
+    }).toList();
+  }
+
   /// Maps WorkoutType to a short display name for picker categories.
   static String getCategoryDisplayName(WorkoutType type) {
     switch (type) {
@@ -55,12 +69,14 @@ class ExercisePicker extends StatefulWidget {
   final List<Exercise> exercises;
   final Set<String> excludeIds;
   final ValueChanged<Exercise> onSelected;
+  final List<String> initialMuscleFilter;
 
   const ExercisePicker({
     super.key,
     required this.exercises,
     this.excludeIds = const {},
     required this.onSelected,
+    this.initialMuscleFilter = const [],
   });
 
   /// Shows the picker as a modal bottom sheet and returns the selected exercise.
@@ -68,6 +84,7 @@ class ExercisePicker extends StatefulWidget {
     BuildContext context, {
     required List<Exercise> exercises,
     Set<String> excludeIds = const {},
+    List<String> initialMuscleFilter = const [],
   }) {
     return showModalBottomSheet<Exercise>(
       context: context,
@@ -76,6 +93,7 @@ class ExercisePicker extends StatefulWidget {
       builder: (context) => ExercisePicker(
         exercises: exercises,
         excludeIds: excludeIds,
+        initialMuscleFilter: initialMuscleFilter,
         onSelected: (exercise) => Navigator.of(context).pop(exercise),
       ),
     );
@@ -91,6 +109,13 @@ class _ExercisePickerState extends State<ExercisePicker> {
 
   final TextEditingController _searchController = TextEditingController();
   String _query = '';
+  late List<String> _muscleFilter;
+
+  @override
+  void initState() {
+    super.initState();
+    _muscleFilter = List.of(widget.initialMuscleFilter);
+  }
 
   @override
   void dispose() {
@@ -98,12 +123,17 @@ class _ExercisePickerState extends State<ExercisePicker> {
     super.dispose();
   }
 
-  List<Exercise> get _filteredExercises =>
-      ExercisePickerHelper.filterExercises(
-        widget.exercises,
-        _query,
-        excludeIds: widget.excludeIds,
-      );
+  List<Exercise> get _filteredExercises {
+    final muscleFiltered = ExercisePickerHelper.filterByMuscleGroups(
+      widget.exercises,
+      _muscleFilter,
+    );
+    return ExercisePickerHelper.filterExercises(
+      muscleFiltered,
+      _query,
+      excludeIds: widget.excludeIds,
+    );
+  }
 
   Map<String, List<Exercise>> get _groupedExercises =>
       ExercisePickerHelper.groupByCategory(_filteredExercises);
@@ -214,6 +244,50 @@ class _ExercisePickerState extends State<ExercisePicker> {
               onChanged: (value) => setState(() => _query = value),
             ),
           ),
+          // Muscle filter chip (shown when initialMuscleFilter is set)
+          if (widget.initialMuscleFilter.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  FilterChip(
+                    label: Text(
+                      _muscleFilter.isNotEmpty
+                          ? 'Filtered: ${_muscleFilter.join(", ")}'
+                          : 'All exercises',
+                    ),
+                    selected: _muscleFilter.isNotEmpty,
+                    onSelected: (selected) {
+                      setState(() {
+                        _muscleFilter = selected
+                            ? List.of(widget.initialMuscleFilter)
+                            : [];
+                      });
+                    },
+                    selectedColor: primaryBlue.withValues(alpha: 0.15),
+                    checkmarkColor: primaryBlue,
+                    labelStyle: TextStyle(
+                      fontSize: 12,
+                      color: _muscleFilter.isNotEmpty ? primaryBlue : textGray,
+                    ),
+                  ),
+                  if (_muscleFilter.isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () => setState(() => _muscleFilter = []),
+                      child: Text(
+                        'Show all',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: primaryBlue,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           // Exercise list grouped by category
           Expanded(
             child: _filteredExercises.isEmpty
